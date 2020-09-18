@@ -1,42 +1,38 @@
-const express = require('express')
-const path = require('path')
+const express = require("express")
+const cors = require("cors")
+const puppeteer = require("puppeteer")
+require("dotenv").config()
+const axios = require("axios").default
+
 const app = express()
-const cors = require('cors')
-const puppeteer = require('puppeteer');
-
-var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://localhost:27017/mydb";
-
-MongoClient.connect(url, function (err, db) {
-    if (err) throw err;
-    console.log("Database created!");
-    db.close();
-});
 
 app.use(cors())
+app.use(express.json());
 
-const PORT = process.env.PORT || 3010
+const PORT = process.env.PORT || 3000
 
-app.use(express.static(path.join(__dirname, 'public')))
+const db = require("./database/initializeDb")
+const dbName = "Covid19"
+db.initialize(app, dbName, "data")
 
 app.listen(PORT, () =>  {
-    console.log('Node.js server is running on port ' + PORT)
-});
+    console.log("Node.js server is running on port " + PORT)
+})
 
 const scrape = async () => {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
+    const browser = await puppeteer.launch({ headless: true })
+    const page = await browser.newPage()
 
-    await page.goto('https://www.worldometers.info/coronavirus/');
+    await page.goto(process.env.URL)
 
-    await page.waitFor(5000);
+    await page.waitFor(5000)
 
     const data = await page.evaluate(() => {
-        const tds = Array.from(document.querySelectorAll('table tr td')).slice(1, 9)
+        const tds = Array.from(document.querySelectorAll("table tr td")).slice(1, 9)
         return tds.map(td => td.innerText)
     });
 
-    await browser.close();
+    await browser.close()
 
     const date_ob = new Date()
 
@@ -61,11 +57,11 @@ const scrape = async () => {
         time: time
     }
 
-    console.log(obj)
+    axios.put(`http://localhost:${PORT}/api/data/5f652cc9fd9551c302fb117e`, obj)
+        .catch(error => console.log(error))
 }
 
-var cron = require('node-cron')
-cron.schedule('*/1 * * * *', () => {
+var cron = require("node-cron")
+cron.schedule("*/30 * * * *", () => {
     scrape()
-    console.log('running a task in 5 minutes')
 })
