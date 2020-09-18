@@ -62,6 +62,7 @@ const scrape = async () => {
 }
 
 var cron = require("node-cron")
-cron.schedule("*/30 * * * *", () => {
+cron.schedule("*/10 * * * *", () => {
     scrape()
+    console.log("scraping in 10 minutes")
 })
