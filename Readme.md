@@ -2,7 +2,7 @@
 
 ---
 
-A node.js app built with [Node-Cron](https://www.npmjs.com/package/node-cron) to scrape the web for Covid-19 related data.
+A node.js app built with [Node-Cron](https://www.npmjs.com/package/node-cron) to scrape the web for Covid-19 related data. The app is running on a Raspberry Pi, scraping once an hour and updating the database.
 
 ---
 
