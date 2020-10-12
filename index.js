@@ -8,7 +8,7 @@ const app = express()
 
 app.use(cors())
 app.use(express.urlencoded({extended: true}))
-app.use(express.json());
+app.use(express.json())
 
 const PORT = process.env.PORT || 3000
 
@@ -62,9 +62,8 @@ const scrape = async () => {
         .catch(error => console.log(error))
 }
 
-scrape()
 var cron = require("node-cron")
-cron.schedule("*/10 * * * *", () => {
+cron.schedule("*/60 * * * *", () => {
     scrape()
-    console.log("scraping in 10 minutes")
+    console.log("scraping in 1 hour")
 })
