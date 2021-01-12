@@ -19,7 +19,7 @@ const dbName = "Covid19"
 db.initialize(app, dbName, "data")
 
 //Express server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server is running on port: ${PORT}`)
 })
 
@@ -71,19 +71,33 @@ const Scrape = async () => {
 }
 
 const SwapData = async (id1, id2) => {
-    const temp = await axios.get(`http://localhost:${PORT}/api/data/${id1}`)
-    await axios.put(`http://localhost:${PORT}/api/data/${id2}`, temp)
+    const { data } = await axios.get(`http://localhost:${PORT}/api/data/${id1}`)
+
+    const history = {
+        type: data.type,
+        total_cases: data.total_cases,
+        new_cases: data.new_cases,
+        total_deaths: data.total_deaths,
+        new_deaths: data.new_deaths,
+        total_recovered: data.total_recovered,
+        active_cases: data.active_cases,
+        critical_active_cases: data.critical_active_cases,
+        time: data.time
+    }
+    
+    axios.put(`http://localhost:${PORT}/api/data/${id2}`, history)
         .catch(error => console.log(error))
 }
 
-//At midnight, the server saves the current data
-cron.schedule("0 0 * * *", async () => {
+//At 2:00 am, the server saves the current data
+cron.schedule("0 2 * * *", async () => {
+    await Scrape()
     await SwapData(secondaryID, tertiaryID)
     await SwapData(primaryID, secondaryID)
 })
 
-//The server scrapes every 30 minutes
-cron.schedule("*/30 * * * *", async () => {
+//The server scrapes every 10 minutes
+cron.schedule("*/10 * * * *", async () => {
     await Scrape()
-    console.log("scraping in 30 minutes") 
+    console.log("scraping in 10 minutes") 
 })
